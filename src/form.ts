@@ -1,8 +1,13 @@
-import {createStore, createEvent, createEffect, createDomain, sample, clearNode, withRegion, forward, Store, Event} from 'effector'
-import {node, h, DOMElement} from 'forest'
-import {Values, Metas, ChangedParams, FormState, Value, Meta} from './types'
-import {get, isEqual, has, identity, cloneDeep} from 'lodash'
-import {set} from 'lodash/fp'
+import {createStore, createEvent, createEffect, createDomain, sample, clearNode, withRegion, forward} from 'effector'
+import {node, h, DOMElement, remap} from 'forest'
+import {Values, Metas, ChangedParams, FormState, Value, Meta, FieldCallback, FormModelParams, GetHelpersParams, GetHelpersResult, FormModelResult} from './types'
+import get from 'lodash/get'
+import isEqual from 'lodash/isEqual'
+import has from 'lodash/has'
+import identity from 'lodash/identity'
+import cloneDeep from 'lodash/cloneDeep'
+import noop from 'lodash/noop'
+import set from 'lodash/fp/set'
 import {flatten} from 'flat'
 
 const formStates = new Map<string, FormState>()
@@ -27,7 +32,6 @@ function getFormName(element: DOMElement | null): string | null {
 * -------------------------------------------------------------------------
 * Состояние всех форм в приложении
 */
-
 export function setFormState(name: string, value: FormState) {
   formStates.set(name, value)
 }
@@ -73,13 +77,6 @@ export function getFormState() {
 * -------------------------------------------------------------------------
 * Получение хелперов для логики формы
 */
-type GetHelpersParams = {values: {current: Values; previous: Values}; metas: {current: Metas; previous: Metas}};
-type GetHelpersResult = {
-  check: (name: string, ...callbacks: Array<any>) => void;
-  modify: (params: {name: string, value?: any, meta?: any}) => void;
-  hasErrors: () => boolean;
-}
-
 function getHelpers({values, metas}: GetHelpersParams): GetHelpersResult {
   function check(name: string, ...callbacks: Array<any>) {
     const currentValue = get(values.current, name);
@@ -118,18 +115,6 @@ function getHelpers({values, metas}: GetHelpersParams): GetHelpersResult {
 * -------------------------------------------------------------------------
 * Модель формы
 */
-export type LogicParams = {
-  helpers: GetHelpersResult;
-}
-
-type FormModelParams = {name: string, init: any, logic: (params: LogicParams) => void}
-type FormModelResult = {
-  Form: any;
-  $values: Store<{current: Values; previous: Values}>;
-  $metas: Store<{current: Metas; previous: Metas}>;
-  changed: Event<{name?: string; value?: Value; values?: Values; meta?: Meta; metas?: Metas}>;
-}
-
 export function formModel({name, init, logic = identity}: FormModelParams): FormModelResult {
   /** Текущие значения формы */
   const $values = createStore<{current: Values; previous: Values}>({current: {}, previous: {}})
@@ -220,4 +205,48 @@ export function formModel({name, init, logic = identity}: FormModelParams): Form
   setTimeout(() => init(state), 0)
 
   return {Form, $values, $metas, changed}
+}
+
+/**
+* -------------------------------------------------------------------------
+* Поле формы, получение значений и мета-данных из контекста
+*/
+export function Field({name}: {name: string}, callback: FieldCallback) {
+  const state = getFormState()
+
+  const $value = createStore<Value>(null)
+    .on(state.$values, (_, values) => get(values.current, name) || null)
+
+  const $meta = createStore<Meta>({})
+    .on(state.$metas, (_, metas) => get(metas.current, name) || {})
+
+  const changed = createEvent<ChangedParams>()
+
+  forward({
+    from: changed.map(value => ({name, value})),
+    to: state.changed
+  })
+
+  /**
+   * В метаданных могут храниться различные хендлеры, которые достаются с помощью remap
+   */
+
+  const {onclick} = remap($meta, {
+    onclick: (meta: Meta) => meta.click ?? noop,
+    parse: (meta: Meta) => meta.parse ?? identity,
+  })
+
+  /** Пример с click */
+  const click = createEvent<MouseEvent>()
+
+  sample({
+    source: onclick,
+    clock: click
+  }).watch((fn: any) => fn())
+
+  /** Пример с input, с поддержкой parse */
+  const input = changed.prepend((e: any) => e.target.value)
+  
+
+  callback({$value, $meta, input, click})
 }

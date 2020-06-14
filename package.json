@@ -1,11 +1,11 @@
 {
-  "name": "forest-test-form",
-  "version": "1.0.0",
+  "name": "forest-form",
+  "version": "0.1.0",
   "description": "Form with effector+forest+foliage",
-  "main": "index.html",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "parcel index.html --open",
-    "build": "parcel build index.html"
+    "start": "parcel examples/index.html --open",
+    "build": "parcel build src/index.ts"
   },
   "dependencies": {
     "@types/flat": "^5.0.1",
@@ -18,10 +18,14 @@
   "devDependencies": {
     "@types/lodash": "^4.14.155",
     "parcel-bundler": "^1.6.1",
+    "parcel-plugin-bundle-visualiser": "^1.2.0",
     "typescript": "^3.9.3"
   },
   "keywords": [
     "typescript",
-    "javascript"
+    "javascript",
+    "form",
+    "effector",
+    "forest"
   ]
 }
