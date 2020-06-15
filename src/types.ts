@@ -1,5 +1,10 @@
 import {Store, Event} from 'effector'
 
+export type CurPrev<T> = {
+  current: T;
+  previous: T;
+}
+
 export type Value = any
 
 export type Values = {[key: string]: Value}
@@ -8,17 +13,22 @@ export type Meta = {
   disabled?: boolean;
   error?: string;
   click?: any;
-  parse?: any;
-  initialized?: boolean;
+  '÷'?: boolean;
 }
 
 export type Metas = {[key: string]: Meta}
 
-export type ChangedParams = {name?: string; value?: Value; values?: Values; meta?: Meta; metas?: Metas}
+export type ChangedParams = {
+  name?: string;
+  value?: Value;
+  values?: Values;
+  meta?: Meta;
+  metas?: Metas
+}
 
 export type FormState = {
-  $values: Store<{current: Values; previous: Values}>;
-  $metas: Store<{current: Metas; previous: Metas}>;
+  $values: Store<CurPrev<Values>>;
+  $metas: Store<CurPrev<Metas>>;
   changed: Event<ChangedParams>
 }
 
@@ -28,17 +38,13 @@ export type LogicParams = {
   helpers: GetHelpersResult;
 }
 
-export type FormModelParams = {name: string, init: any, logic: (params: LogicParams) => void}
-export type FormModelResult = {
-  Form: any;
-  $values: Store<{current: Values; previous: Values}>;
-  $metas: Store<{current: Metas; previous: Metas}>;
-  changed: Event<{name?: string; value?: Value; values?: Values; meta?: Meta; metas?: Metas}>;
-}
+export type FormModelParams = {name: string; init: any; logic: (params: LogicParams) => void}
+export type FormModelResult = FormState & {Form: any}
 
-export type GetHelpersParams = {values: {current: Values; previous: Values}; metas: {current: Metas; previous: Metas}};
+export type GetHelpersParams = {values: CurPrev<Values>; metas: CurPrev<Metas>};
 export type GetHelpersResult = {
   check: (name: string, ...callbacks: Array<any>) => void;
-  modify: (params: {name: string, value?: any, meta?: any}) => void;
+  modify: (params: {name: string; value?: any; meta?: any}) => void;
+  modifiers: (params: Array<{name: string; value?: any; meta?: any}>) => void;
   hasErrors: () => boolean;
 }

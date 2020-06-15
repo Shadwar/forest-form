@@ -1,14 +1,13 @@
 import {createStore, createEvent, createEffect, createDomain, sample, clearNode, withRegion, forward} from 'effector'
-import {node, h, DOMElement, remap} from 'forest'
-import {Values, Metas, ChangedParams, FormState, Value, Meta, FieldCallback, FormModelParams, GetHelpersParams, GetHelpersResult, FormModelResult} from './types'
+import {node, h, DOMElement, remap, spec} from 'forest'
 import get from 'lodash/get'
-import isEqual from 'lodash/isEqual'
 import has from 'lodash/has'
 import identity from 'lodash/identity'
 import cloneDeep from 'lodash/cloneDeep'
 import noop from 'lodash/noop'
 import set from 'lodash/fp/set'
-import {flatten} from 'flat'
+import {getHelpers} from './helpers'
+import {Values, Metas, ChangedParams, FormState, Value, Meta, FieldCallback, FormModelParams, FormModelResult} from './types'
 
 const formStates = new Map<string, FormState>()
 
@@ -71,44 +70,6 @@ export function getFormState() {
   })
 
   return {$values, $metas, changed}
-}
-
-/**
-* -------------------------------------------------------------------------
-* Получение хелперов для логики формы
-*/
-function getHelpers({values, metas}: GetHelpersParams): GetHelpersResult {
-  function check(name: string, ...callbacks: Array<any>) {
-    const currentValue = get(values.current, name);
-    const previousValue = get(values.previous, name);
-    const currentMeta = get(metas.current, name, {initialized: false});
-    const previousMeta = get(metas.previous, name, {});
-
-    if (currentValue !== previousValue || !isEqual(currentMeta, previousMeta) || !currentMeta.initialized) {
-      const error = callbacks.reduce((res, cur) => res || cur(currentValue, previousValue, currentMeta, previousMeta), undefined)
-      metas.current = set(name, {...currentMeta, initialized: true, error}, metas.current)
-    }
-  }
-
-  function hasErrors(): boolean {
-    const flatMeta = flatten<Metas, {[key: string]: any}>(metas.current)
-    return Object.keys(flatMeta).some(key => /\.error$/.test(key) && flatMeta[key] !== undefined)
-  }
-
-  function modify(params: {name: string; value?: any; meta?: any}) {
-    const {name, value, meta} = params
-
-    if (has(params, 'value')) {
-      values.current = set(name, value, values.current)
-    }
-
-    if (has(params, 'meta')) {
-      const currentMeta = get(metas.current, name) || {}
-      metas.current = set(name, {...currentMeta, ...meta}, metas.current)
-    }
-  }
-
-  return {check, hasErrors, modify}
 }
 
 /**
@@ -194,9 +155,10 @@ export function formModel({name, init, logic = identity}: FormModelParams): Form
   const state = {$values, $metas, changed}
 
   const Form = (callback: () => void) => h('form', () => {
+    spec({attr: {formname: name}})
+
     node(n => {
       setFormState(name, state)
-      n.setAttribute('formname', name)
     })
 
     callback()
@@ -233,7 +195,6 @@ export function Field({name}: {name: string}, callback: FieldCallback) {
 
   const {onclick} = remap($meta, {
     onclick: (meta: Meta) => meta.click ?? noop,
-    parse: (meta: Meta) => meta.parse ?? identity,
   })
 
   /** Пример с click */
@@ -244,9 +205,8 @@ export function Field({name}: {name: string}, callback: FieldCallback) {
     clock: click
   }).watch((fn: any) => fn())
 
-  /** Пример с input, с поддержкой parse */
+  /** input напрямую изменяет состояние через changed */
   const input = changed.prepend((e: any) => e.target.value)
-  
 
   callback({$value, $meta, input, click})
 }
