@@ -1,11 +1,19 @@
 {
   "name": "forest-form",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Form with effector+forest+foliage",
   "main": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shadwar/forest-form.git"
+  },
+  "license": "MIT",
+  "author": "Ivan Oshchepkov",
+  "homepage": "https://github.com/Shadwar/forest-form",
   "scripts": {
     "start": "parcel examples/index.html --open",
-    "build": "parcel build src/index.ts"
+    "build": "parcel build src/index.ts",
+    "build-vercel": "parcel build examples/index.html"
   },
   "dependencies": {
     "@types/flat": "^5.0.1",

@@ -2,14 +2,14 @@
 
 Form state with Forest and Effector.
 
+Example: 
+```
+Login form: https://forest-form.vercel.app/
+```
+
 Install:
 ```
 yarn add forest-form
-```
-
-Run example: 
-```
-yarn start
 ```
 
 Create your own fields:
