@@ -1,4 +1,4 @@
-import {createStore, createEvent, createEffect, createDomain, sample, clearNode, withRegion, forward} from 'effector'
+import {createStore, createEvent, createEffect, withRegion, sample, clearNode, createNode, forward} from 'effector'
 import {node, h, DOMElement, remap, spec} from 'forest'
 import get from 'lodash/get'
 import has from 'lodash/has'
@@ -36,7 +36,7 @@ export function setFormState(name: string, value: FormState) {
 }
 
 export function getFormState() {
-  const domain = createDomain()
+  const region = createNode({})
 
   const $values = createStore<{current: Values; previous: Values}>({current: {}, previous: {}})
   const $metas = createStore<{current: Metas; previous: Metas}>({current: {}, previous: {}})
@@ -45,14 +45,14 @@ export function getFormState() {
   const $formName = createStore('');
 
   $formName.watch(formName => {
-    clearNode(domain)
+    clearNode(region)
     const state = formStates.get(formName)
 
     if (!state) {
       return
     }
 
-    withRegion(domain, () => {
+    withRegion(region, () => {
       $values.on(state.$values, (_, values) => values)
 
       $metas.on(state.$metas, (_, metas) => metas)
