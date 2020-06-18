@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime'
 import {using, h} from 'forest'
 import {StyledRoot} from 'foliage'
 import {formModel} from '../../src'
