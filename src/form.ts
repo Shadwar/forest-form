@@ -154,15 +154,17 @@ export function formModel({name, init, logic = identity}: FormModelParams): Form
 
   const state = {$values, $metas, changed}
 
-  const Form = (callback: () => void) => h('form', () => {
-    spec({attr: {formname: name}})
+  const Form = (callback: () => void) => {
+    h('form', () => {
+      spec({attr: {formname: name}})
 
-    node(n => {
-      setFormState(name, state)
+      node(n => {
+        setFormState(name, state)
+      })
+
+      callback()
     })
-
-    callback()
-  })
+  }
 
   setTimeout(() => init(state), 0)
 
