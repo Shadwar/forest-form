@@ -1,6 +1,6 @@
 {
   "name": "forest-form",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Form with effector+forest+foliage",
   "main": "src/index.ts",
   "repository": {
@@ -17,17 +17,22 @@
   },
   "dependencies": {
     "@types/flat": "^5.0.1",
-    "effector": "20.15.8",
     "flat": "^5.0.0",
-    "foliage": "0.102.1",
-    "forest": "0.16.1",
     "lodash": "^4.17.15"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.155",
     "parcel-bundler": "^1.6.1",
     "parcel-plugin-bundle-visualiser": "^1.2.0",
-    "typescript": "^3.9.3"
+    "typescript": "^3.9.3",
+    "effector": "20.15.8",
+    "foliage": "0.102.1",
+    "forest": "0.16.1"
+  },
+  "peerDependencies": {
+    "effector": "20.15.8",
+    "foliage": "0.102.1",
+    "forest": "0.16.1"
   },
   "keywords": [
     "typescript",
