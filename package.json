@@ -1,8 +1,8 @@
 {
   "name": "forest-form",
-  "version": "0.1.5",
+  "version": "0.1.10",
   "description": "Form with effector+forest+foliage",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/Shadwar/forest-form.git"
@@ -12,7 +12,7 @@
   "homepage": "https://github.com/Shadwar/forest-form",
   "scripts": {
     "start": "parcel examples/index.html --open",
-    "build": "parcel build src/index.ts",
+    "prepublish": "tsc",
     "build-vercel": "parcel build examples/index.html"
   },
   "dependencies": {
